@@ -3,6 +3,7 @@ package com.wchtpapaya.brutalrun.sprites;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.esotericsoftware.spine.Skeleton;
 
@@ -16,10 +17,19 @@ public class GameObject {
     }
 
     public static GameObject of(Texture img) {
+        return new GameObject(new Sprite(img), null);
     }
-
 
     public void draw(SpriteBatch batch) {
         sprite.draw(batch);
+
+    }
+
+    public void setPosition(Vector2 position) {
+        sprite.setPosition(position.x, position.y);
+    }
+
+    public Vector2 getPosition() {
+        return new Vector2(sprite.getX(), sprite.getY());
     }
 }

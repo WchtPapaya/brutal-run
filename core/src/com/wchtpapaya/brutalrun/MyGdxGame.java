@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -21,13 +22,10 @@ public class MyGdxGame extends ApplicationAdapter {
     @Override
     public void create() {
         batch = new SpriteBatch();
-        img = new Texture("badlogic.jpg");
+        img = new Texture("Hero_1.png");
         GameObject sprite = GameObject.of(img);
-        int middleHeight = Gdx.graphics.getHeight() / 2;
 
-        sprite.getOriginX();
-        int middleWidth = Gdx.graphics.getWidth() / 2;
-        sprite.setPosition(middleHeight, middleWidth);
+        sprite.setPosition(new Vector2(Gdx.graphics.getWidth() / 3, 0));
         sprites.add(sprite);
     }
 
