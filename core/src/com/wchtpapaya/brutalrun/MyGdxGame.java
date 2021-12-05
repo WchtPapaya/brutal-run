@@ -1,20 +1,12 @@
 package com.wchtpapaya.brutalrun;
 
 import com.badlogic.gdx.*;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.box2d.Box2D;
-import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.wchtpapaya.brutalrun.sprites.GameObject;
 
@@ -100,8 +92,13 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
         if (button != Input.Buttons.LEFT || pointer > 0) return false;
         Vector3 touchPoint = camera.unproject(new Vector3(screenX, screenY, 0));
         Gdx.app.log("Debug", String.format("Mouse touch at x: %f, y: %f", touchPoint.x, touchPoint.y));
-        actions.add(new MovingAction(new Vector2(touchPoint.x, touchPoint.y), 3, selectedHero));
+        addMovingAction(new Vector2(touchPoint.x, touchPoint.y), selectedHero);
         return true;
+    }
+
+    private void addMovingAction(Vector2 destination, GameObject object) {
+        actions.removeIf(a -> a.getObject().equals(object));
+        actions.add(new MovingAction(destination, 3, object));
     }
 
     @Override
@@ -123,4 +120,5 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
     public boolean scrolled(float amountX, float amountY) {
         return false;
     }
+
 }
