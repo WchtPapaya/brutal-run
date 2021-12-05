@@ -1,9 +1,6 @@
 package com.wchtpapaya.brutalrun;
 
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Graphics;
-import com.badlogic.gdx.Input;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -11,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -23,9 +21,13 @@ import com.wchtpapaya.brutalrun.sprites.GameObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyGdxGame extends ApplicationAdapter {
+public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
     private SpriteBatch batch;
+
     private List<GameObject> sprites = new ArrayList<>();
+    private List<Action> actions = new ArrayList<>();
+    private GameObject selectedHero;
+
     private Viewport viewport;
     private OrthographicCamera camera;
     private float rotationSpeed = 0.5f;
@@ -34,6 +36,7 @@ public class MyGdxGame extends ApplicationAdapter {
     @Override
     public void create() {
         Gdx.graphics.setWindowedMode(1440, 900);
+        Gdx.input.setInputProcessor(this);
 
         float width = Gdx.graphics.getWidth();
         float height = Gdx.graphics.getHeight();
@@ -49,13 +52,15 @@ public class MyGdxGame extends ApplicationAdapter {
         sprite.setPosition(new Vector2(0, 0));
         sprites.add(sprite);
 
+        selectedHero = sprite;
     }
 
     @Override
     public void render() {
-        handleInput();
         camera.update();
         batch.setProjectionMatrix(camera.combined);
+        actions.forEach(a -> a.perform(Gdx.graphics.getDeltaTime()));
+        actions.removeIf(Action::isCompleted);
 
         ScreenUtils.clear(1, 0, 0, 1);
         batch.begin();
@@ -63,40 +68,6 @@ public class MyGdxGame extends ApplicationAdapter {
         batch.end();
     }
 
-    private void handleInput() {
-        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            camera.zoom += 0.02;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
-            camera.zoom -= 0.02;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            camera.translate(-3, 0, 0);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            camera.translate(3, 0, 0);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            camera.translate(0, -3, 0);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            camera.translate(0, 3, 0);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
-            camera.rotate(-rotationSpeed, 0, 0, 1);
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.E)) {
-            camera.rotate(rotationSpeed, 0, 0, 1);
-        }
-
-//        camera.zoom = MathUtils.clamp(camera.zoom, 0.1f, 100/camera.viewportWidth);
-
-//        float effectiveViewportWidth = camera.viewportWidth * camera.zoom;
-//        float effectiveViewportHeight = camera.viewportHeight * camera.zoom;
-//
-//        camera.position.x = MathUtils.clamp(camera.position.x, effectiveViewportWidth / 2f, 100 - effectiveViewportWidth / 2f);
-//        camera.position.y = MathUtils.clamp(camera.position.y, effectiveViewportHeight / 2f, 100 - effectiveViewportHeight / 2f);
-    }
 
     @Override
     public void dispose() {
@@ -107,5 +78,49 @@ public class MyGdxGame extends ApplicationAdapter {
     @Override
     public void resize(int width, int height) {
 //        viewport.update(width, height);
+    }
+
+    @Override
+    public boolean keyDown(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        if (button != Input.Buttons.LEFT || pointer > 0) return false;
+        Vector3 touchPoint = camera.unproject(new Vector3(screenX, screenY, 0));
+        Gdx.app.log("Debug", String.format("Mouse touch at x: %f, y: %f", touchPoint.x, touchPoint.y));
+        actions.add(new MovingAction(new Vector2(touchPoint.x, touchPoint.y), 3, selectedHero));
+        return true;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(float amountX, float amountY) {
+        return false;
     }
 }

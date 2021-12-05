@@ -47,4 +47,8 @@ public class GameObject {
     public void dispose() {
         sprite.getTexture().dispose();
     }
+
+    public void translate(float dx, float dy) {
+        sprite.translate(dx, dy);
+    }
 }
