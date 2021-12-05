@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.wchtpapaya.brutalrun.sprites.GameObject;
@@ -14,6 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
+    private static final float TIME_STEP = 0.01f;
+    private static final int VELOCITY_ITERATIONS = 4;
+    private static final int POSITION_ITERATIONS = 4;
+
     private SpriteBatch batch;
 
     private List<GameObject> sprites = new ArrayList<>();
@@ -24,6 +30,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
     private OrthographicCamera camera;
     private float rotationSpeed = 0.5f;
 
+    private Box2DDebugRenderer debugRenderer;
+    private World world;
 
     @Override
     public void create() {
@@ -38,9 +46,11 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 //        viewport = new FitViewport(camera.viewportWidth, camera.viewportHeight, camera);
         camera.update();
 
+        world = WorldHandler.getWorld();
+        debugRenderer = new Box2DDebugRenderer();
+
         batch = new SpriteBatch();
-        GameObject sprite = GameObject.of(new Texture("Hero_1.png"));
-        sprite.setSizeWithWidthAspect(5);
+        GameObject sprite = GameObject.of(new Texture("Hero_1.png"), 5);
         sprite.setPosition(new Vector2(0, 0));
         sprites.add(sprite);
 
@@ -49,12 +59,14 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 
     @Override
     public void render() {
+        float deltaTime = Gdx.graphics.getDeltaTime();
         camera.update();
         batch.setProjectionMatrix(camera.combined);
-        actions.forEach(a -> a.perform(Gdx.graphics.getDeltaTime()));
+        actions.forEach(a -> a.perform(deltaTime));
         actions.removeIf(Action::isCompleted);
-
+        doPhysicsStep(deltaTime);
         ScreenUtils.clear(1, 0, 0, 1);
+        debugRenderer.render(world, camera.combined);
         batch.begin();
         sprites.forEach(s -> s.draw(batch));
         batch.end();
@@ -99,6 +111,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
     private void addMovingAction(Vector2 destination, GameObject object) {
         actions.removeIf(a -> a.getObject().equals(object));
         actions.add(new MovingAction(destination, 3, object));
+        selectedHero.moveTo(destination, 3);
     }
 
     @Override
@@ -121,4 +134,16 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
         return false;
     }
 
+    private float accumulator = 0;
+
+    private void doPhysicsStep(float deltaTime) {
+        // fixed time step
+        // max frame time to avoid spiral of death (on slow devices)
+        float frameTime = Math.min(deltaTime, 0.25f);
+        accumulator += frameTime;
+        while (accumulator >= TIME_STEP) {
+            world.step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+            accumulator -= TIME_STEP;
+        }
+    }
 }
