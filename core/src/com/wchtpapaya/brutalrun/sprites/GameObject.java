@@ -32,4 +32,19 @@ public class GameObject {
     public Vector2 getPosition() {
         return new Vector2(sprite.getX(), sprite.getY());
     }
+
+    public void setSize(float width, float height) {
+        sprite.setSize(width, height);
+    }
+
+    public void setSizeWithHeightAspect(float width) {
+        sprite.setSize(width, width / sprite.getWidth() * sprite.getHeight());
+    }
+
+    public void setSizeWithWidthAspect(float height) {
+        sprite.setSize( height / sprite.getHeight() * sprite.getWidth(), height);
+    }
+    public void dispose() {
+        sprite.getTexture().dispose();
+    }
 }
