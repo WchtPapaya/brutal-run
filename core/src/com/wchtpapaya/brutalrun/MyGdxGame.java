@@ -110,8 +110,13 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 
     private void addMovingAction(Vector2 destination, GameObject object) {
         actions.removeIf(a -> a.getObject().equals(object));
-        actions.add(new MovingAction(destination, 3, object));
-        selectedHero.moveTo(destination, 3);
+        addAction(destination, object);
+    }
+
+    private void addAction(Vector2 destination, GameObject object) {
+        Action action = new MovingAction(destination, 3, object);
+        action.start();
+        actions.add(action);
     }
 
     @Override

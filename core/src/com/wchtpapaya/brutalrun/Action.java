@@ -20,6 +20,8 @@ public abstract class Action {
     }
 
 
+    public abstract void start();
+
     public abstract boolean perform(float deltaTime);
 
     public boolean isCompleted() {

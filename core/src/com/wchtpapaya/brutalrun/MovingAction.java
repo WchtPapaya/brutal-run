@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.wchtpapaya.brutalrun.sprites.GameObject;
 
 public class MovingAction extends Action {
+
     private final Vector2 direction;
     private final float time;
     private float currentTime;
@@ -23,13 +24,19 @@ public class MovingAction extends Action {
     }
 
     @Override
+    public void start() {
+//        object.setVelocity(direction);
+    }
+
+    @Override
     public boolean perform(float deltaTime) {
         if (completed) return true;
 
-        object.translate(direction.x * deltaTime, direction.y * deltaTime);
         currentTime += deltaTime;
+        object.translate(direction.x * deltaTime, direction.y * deltaTime);
         if (currentTime >= time) {
             completed = true;
+            object.clearVelocity();
             return true;
         }
         return false;
