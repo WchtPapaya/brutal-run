@@ -25,7 +25,7 @@ public class MovingAction extends Action {
 
     @Override
     public void start() {
-//        object.setVelocity(direction);
+        object.flipLeft(direction.x < 0);
     }
 
     @Override

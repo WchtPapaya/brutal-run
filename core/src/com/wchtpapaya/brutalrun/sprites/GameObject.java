@@ -98,4 +98,8 @@ public class GameObject {
     public void clearVelocity() {
         box2dBody.setLinearVelocity(0.0f, 0.0f);
     }
+
+    public void flipLeft(boolean left) {
+        sprite.setFlip(left, sprite.isFlipY());
+    }
 }
