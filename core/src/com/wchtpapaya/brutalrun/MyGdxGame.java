@@ -53,13 +53,18 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
         batch = new SpriteBatch();
 
         this.createHero();
-        this.createEnemy();
+        GameObject enemy = this.createEnemy();
+
+        selectedHero.setEnemyToAttack(enemy);
+        selectedHero.setAttackRadius(5);
+        selectedHero.setWeaponDamage(10);
     }
 
-    private void createEnemy() {
+    private GameObject createEnemy() {
         GameObject sprite = GameObject.of(new Texture("Enemy_1.png"), 3, GameObject.Type.ENEMY);
         sprite.setPosition(new Vector2(WORLD_WIDTH * 0.7f, 0));
         sprites.add(sprite);
+        return sprite;
     }
 
     private void createHero() {
@@ -77,6 +82,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
         actions.forEach(a -> a.perform(deltaTime));
         actions.removeIf(Action::isCompleted);
         doPhysicsStep(deltaTime);
+        sprites.forEach(GameObject::attackEnemy);
         ScreenUtils.clear(1, 0, 0, 1);
         debugRenderer.render(world, camera.combined);
         batch.begin();

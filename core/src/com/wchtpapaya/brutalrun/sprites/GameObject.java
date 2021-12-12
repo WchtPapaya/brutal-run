@@ -9,6 +9,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.wchtpapaya.brutalrun.WorldHandler;
 
+import static com.wchtpapaya.brutalrun.Utils.distance;
+
 public class GameObject {
 
     public enum Type {
@@ -41,8 +43,55 @@ public class GameObject {
     private float maxHealth;
     private float health;
 
+    private GameObject enemyToAttack;
+    private float attackRadius;
+    private float weaponDamage;
+
     public GameObject(Sprite sprite) {
         this.sprite = sprite;
+    }
+
+    public GameObject getEnemyToAttack() {
+        return enemyToAttack;
+    }
+
+    public void setEnemyToAttack(GameObject enemyToAttack) {
+        this.enemyToAttack = enemyToAttack;
+    }
+
+    public float getAttackRadius() {
+        return attackRadius;
+    }
+
+    public void setAttackRadius(float attackRadius) {
+        this.attackRadius = attackRadius;
+    }
+
+    public void attackEnemy() {
+        if (enemyToAttack == null) return;
+        final float distance = (float) distance(sprite.getX(), sprite.getY(), enemyToAttack.getX(), enemyToAttack.getY());
+        if (distance > attackRadius) return;
+        enemyToAttack.decreaseHealth(weaponDamage);
+    }
+
+    private void decreaseHealth(float damage) {
+        health -= damage;
+    }
+
+    private float getX() {
+        return sprite.getX();
+    }
+
+    private float getY() {
+        return sprite.getY();
+    }
+
+    public float getWeaponDamage() {
+        return weaponDamage;
+    }
+
+    public void setWeaponDamage(float weaponDamage) {
+        this.weaponDamage = weaponDamage;
     }
 
     public static GameObject of(Texture img, float height, Type type) {
