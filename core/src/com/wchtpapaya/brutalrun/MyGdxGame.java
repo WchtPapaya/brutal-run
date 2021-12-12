@@ -19,6 +19,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
     private static final float TIME_STEP = 0.01f;
     private static final int VELOCITY_ITERATIONS = 4;
     private static final int POSITION_ITERATIONS = 4;
+    public static final int WORLD_WIDTH = 30;
 
     private SpriteBatch batch;
 
@@ -41,7 +42,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
         float width = Gdx.graphics.getWidth();
         float height = Gdx.graphics.getHeight();
 
-        camera = new OrthographicCamera(30, height / width * 30);
+        camera = new OrthographicCamera(WORLD_WIDTH, height / width * WORLD_WIDTH);
         camera.position.set(camera.viewportWidth / 2f, camera.viewportHeight / 2f, 0);
 //        viewport = new FitViewport(camera.viewportWidth, camera.viewportHeight, camera);
         camera.update();
@@ -50,10 +51,21 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
         debugRenderer = new Box2DDebugRenderer();
 
         batch = new SpriteBatch();
-        GameObject sprite = GameObject.of(new Texture("Hero_1.png"), 5);
+
+        this.createHero();
+        this.createEnemy();
+    }
+
+    private void createEnemy() {
+        GameObject sprite = GameObject.of(new Texture("Enemy_1.png"), 3, GameObject.Type.ENEMY);
+        sprite.setPosition(new Vector2(WORLD_WIDTH * 0.7f, 0));
+        sprites.add(sprite);
+    }
+
+    private void createHero() {
+        GameObject sprite = GameObject.of(new Texture("Hero_1.png"), 5, GameObject.Type.HERO);
         sprite.setPosition(new Vector2(0, 0));
         sprites.add(sprite);
-
         selectedHero = sprite;
     }
 
@@ -150,5 +162,6 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
             world.step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
             accumulator -= TIME_STEP;
         }
+        ;
     }
 }
