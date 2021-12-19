@@ -10,16 +10,23 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.wchtpapaya.brutalrun.sprites.GameObject;
+import com.wchtpapaya.brutalrun.action.Action;
+import com.wchtpapaya.brutalrun.action.MovingAction;
+import com.wchtpapaya.brutalrun.controller.AttackingController;
+import com.wchtpapaya.brutalrun.sprite.GameObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
     private static final float TIME_STEP = 0.01f;
     private static final int VELOCITY_ITERATIONS = 4;
     private static final int POSITION_ITERATIONS = 4;
     public static final int WORLD_WIDTH = 30;
+
+
+    private AttackingController attackingController;
 
     private SpriteBatch batch;
 
@@ -52,12 +59,15 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 
         batch = new SpriteBatch();
 
+        attackingController = new AttackingController();
+
         this.createHero();
         GameObject enemy = this.createEnemy();
 
         selectedHero.setEnemyToAttack(enemy);
         selectedHero.setAttackRadius(5);
         selectedHero.setWeaponDamage(10);
+        selectedHero.setWeaponDelay(1.0f);
     }
 
     private GameObject createEnemy() {
@@ -79,10 +89,16 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
         float deltaTime = Gdx.graphics.getDeltaTime();
         camera.update();
         batch.setProjectionMatrix(camera.combined);
+
+        sprites.stream().map(attackingController::attackEnemy)
+                .filter(Objects::nonNull)
+                .forEach(a -> actions.add(a));
+
         actions.forEach(a -> a.perform(deltaTime));
         actions.removeIf(Action::isCompleted);
+
         doPhysicsStep(deltaTime);
-        sprites.forEach(GameObject::attackEnemy);
+
         ScreenUtils.clear(1, 0, 0, 1);
         debugRenderer.render(world, camera.combined);
         batch.begin();

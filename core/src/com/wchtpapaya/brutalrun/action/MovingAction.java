@@ -1,7 +1,7 @@
-package com.wchtpapaya.brutalrun;
+package com.wchtpapaya.brutalrun.action;
 
 import com.badlogic.gdx.math.Vector2;
-import com.wchtpapaya.brutalrun.sprites.GameObject;
+import com.wchtpapaya.brutalrun.sprite.GameObject;
 
 public class MovingAction extends Action {
 

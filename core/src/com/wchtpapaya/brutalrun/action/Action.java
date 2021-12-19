@@ -1,6 +1,6 @@
-package com.wchtpapaya.brutalrun;
+package com.wchtpapaya.brutalrun.action;
 
-import com.wchtpapaya.brutalrun.sprites.GameObject;
+import com.wchtpapaya.brutalrun.sprite.GameObject;
 
 public abstract class Action {
 

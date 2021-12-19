@@ -1,4 +1,4 @@
-package com.wchtpapaya.brutalrun.sprites;
+package com.wchtpapaya.brutalrun.sprite;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -8,8 +8,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.wchtpapaya.brutalrun.WorldHandler;
-
-import static com.wchtpapaya.brutalrun.Utils.distance;
 
 public class GameObject {
 
@@ -46,6 +44,8 @@ public class GameObject {
     private GameObject enemyToAttack;
     private float attackRadius;
     private float weaponDamage;
+    private boolean weaponOnDelay;
+    private float weaponDelay;
 
     public GameObject(Sprite sprite) {
         this.sprite = sprite;
@@ -67,22 +67,23 @@ public class GameObject {
         this.attackRadius = attackRadius;
     }
 
-    public void attackEnemy() {
-        if (enemyToAttack == null) return;
-        final float distance = (float) distance(sprite.getX(), sprite.getY(), enemyToAttack.getX(), enemyToAttack.getY());
-        if (distance > attackRadius) return;
-        enemyToAttack.decreaseHealth(weaponDamage);
-    }
-
-    private void decreaseHealth(float damage) {
+    public void decreaseHealth(float damage) {
         health -= damage;
     }
 
-    private float getX() {
+    public boolean isWeaponOnDelay() {
+        return weaponOnDelay;
+    }
+
+    public void setWeaponOnDelay(boolean weaponOnDelay) {
+        this.weaponOnDelay = weaponOnDelay;
+    }
+
+    public float getX() {
         return sprite.getX();
     }
 
-    private float getY() {
+    public float getY() {
         return sprite.getY();
     }
 
@@ -92,6 +93,14 @@ public class GameObject {
 
     public void setWeaponDamage(float weaponDamage) {
         this.weaponDamage = weaponDamage;
+    }
+
+    public float getWeaponDelay() {
+        return weaponDelay;
+    }
+
+    public void setWeaponDelay(float seconds) {
+        this.weaponDelay = seconds;
     }
 
     public static GameObject of(Texture img, float height, Type type) {
