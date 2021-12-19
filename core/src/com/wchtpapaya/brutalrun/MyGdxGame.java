@@ -6,8 +6,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.wchtpapaya.brutalrun.action.Action;
@@ -38,9 +36,6 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
     private OrthographicCamera camera;
     private float rotationSpeed = 0.5f;
 
-    private Box2DDebugRenderer debugRenderer;
-    private World world;
-
     @Override
     public void create() {
         Gdx.graphics.setWindowedMode(1440, 900);
@@ -53,9 +48,6 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
         camera.position.set(camera.viewportWidth / 2f, camera.viewportHeight / 2f, 0);
 //        viewport = new FitViewport(camera.viewportWidth, camera.viewportHeight, camera);
         camera.update();
-
-        world = WorldHandler.getWorld();
-        debugRenderer = new Box2DDebugRenderer();
 
         batch = new SpriteBatch();
 
@@ -97,10 +89,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
         actions.forEach(a -> a.perform(deltaTime));
         actions.removeIf(Action::isCompleted);
 
-        doPhysicsStep(deltaTime);
-
         ScreenUtils.clear(1, 0, 0, 1);
-        debugRenderer.render(world, camera.combined);
         batch.begin();
         sprites.forEach(s -> s.draw(batch));
         batch.end();
@@ -173,17 +162,4 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
         return false;
     }
 
-    private float accumulator = 0;
-
-    private void doPhysicsStep(float deltaTime) {
-        // fixed time step
-        // max frame time to avoid spiral of death (on slow devices)
-        float frameTime = Math.min(deltaTime, 0.25f);
-        accumulator += frameTime;
-        while (accumulator >= TIME_STEP) {
-            world.step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
-            accumulator -= TIME_STEP;
-        }
-        ;
-    }
 }

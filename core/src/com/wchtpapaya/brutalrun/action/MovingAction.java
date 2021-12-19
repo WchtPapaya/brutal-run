@@ -36,7 +36,6 @@ public class MovingAction extends Action {
         object.translate(direction.x * deltaTime, direction.y * deltaTime);
         if (currentTime >= time) {
             completed = true;
-            object.clearVelocity();
             return true;
         }
         return false;

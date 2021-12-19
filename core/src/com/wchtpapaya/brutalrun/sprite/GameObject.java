@@ -6,8 +6,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.*;
-import com.wchtpapaya.brutalrun.WorldHandler;
 
 public class GameObject {
 
@@ -35,7 +33,6 @@ public class GameObject {
 
     public static final float HEALTH_POS = 10.0f / 9;
     private final Sprite sprite;
-    private Body box2dBody;
 
     private Texture healthBar;
     private float maxHealth;
@@ -106,7 +103,6 @@ public class GameObject {
     public static GameObject of(Texture img, float height, Type type) {
         GameObject object = new GameObject(new Sprite(img));
         object.setSizeWithWidthAspect(height);
-        object.createDynamicBody(type);
         object.setHealth(100.0f);
         object.setMaxHealth(100.0f);
         object.createHealthBar();
@@ -135,7 +131,6 @@ public class GameObject {
     public void setPosition(Vector2 position) {
         sprite.setPosition(position.x, position.y);
         position.add(sprite.getWidth() / 2, sprite.getHeight() / 2);
-        box2dBody.setTransform(position, box2dBody.getAngle());
     }
 
     public Vector2 getPosition() {
@@ -156,54 +151,11 @@ public class GameObject {
 
     public void dispose() {
         sprite.getTexture().dispose();
-        box2dBody.getFixtureList().forEach(f -> f.getShape().dispose());
         healthBar.dispose();
     }
 
     public void translate(float dx, float dy) {
         sprite.translate(dx, dy);
-        Vector2 vec = box2dBody.getPosition();
-        vec.add(dx, dy);
-        box2dBody.setTransform(vec, box2dBody.getAngle());
-    }
-
-    protected void createDynamicBody(Type type) {
-//First we create a body definition
-        BodyDef bodyDef = new BodyDef();
-// We set our body to dynamic, for something like ground which doesn't move we would set it to StaticBody
-        bodyDef.type = BodyDef.BodyType.DynamicBody;
-// Set our body's starting position in the world
-
-        float halfWidth = this.sprite.getWidth() / 2;
-        float halfHeight = this.sprite.getHeight() / 2;
-
-        bodyDef.position.set(this.getPosition().x + halfWidth, this.getPosition().y + halfHeight);
-
-// Create our body in the world using our body definition
-        box2dBody = WorldHandler.getWorld().createBody(bodyDef);
-
-// Create a circle shape and set its radius to 6
-        PolygonShape box = new PolygonShape();
-        box.setAsBox(halfWidth, halfHeight);
-// Create a fixture definition to apply our shape to
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.shape = box;
-        fixtureDef.density = 0.5f;
-        fixtureDef.friction = 0.4f;
-        fixtureDef.restitution = 0.6f; // Make it bounce a little bit
-        Filter filter = fixtureDef.filter;
-        filter.categoryBits = (short) type.getCategory();
-        filter.maskBits = (short) type.getCollisionMask();
-        box2dBody.createFixture(fixtureDef);
-        box2dBody.setUserData(this);
-    }
-
-    public void setVelocity(Vector2 direction) {
-        box2dBody.setLinearVelocity(direction);
-    }
-
-    public void clearVelocity() {
-        box2dBody.setLinearVelocity(0.0f, 0.0f);
     }
 
     public void flipLeft(boolean left) {
