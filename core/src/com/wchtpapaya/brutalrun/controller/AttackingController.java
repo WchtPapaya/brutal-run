@@ -12,11 +12,20 @@ public class AttackingController {
         if (enemyToAttack == null) return null;
         if (attacker.isWeaponOnDelay()) return null;
 
-        final float distance = (float) distance(attacker.getX(), attacker.getY(), enemyToAttack.getX(), enemyToAttack.getY());
-        if (distance > attacker.getAttackRadius()) return null;
+        if (!canAttack(attacker)) return null;
         enemyToAttack.decreaseHealth(attacker.getWeaponDamage());
         attacker.setWeaponOnDelay(true);
 
         return new DelayedAction(attacker);
+    }
+
+    public boolean canAttack(GameObject attacker) {
+        return canAttack(attacker, attacker.getEnemyToAttack());
+    }
+
+    public boolean canAttack(GameObject attacker, GameObject enemyToAttack) {
+        if (enemyToAttack == null) throw new RuntimeException("There is no enemy to attack");
+        final float distance = (float) distance(attacker.getX(), attacker.getY(), enemyToAttack.getX(), enemyToAttack.getY());
+        return distance <= attacker.getAttackRadius();
     }
 }

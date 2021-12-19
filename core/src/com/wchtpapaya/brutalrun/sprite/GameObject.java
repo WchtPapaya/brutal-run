@@ -8,9 +8,24 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
 public class GameObject {
-    public static final float HEALTH_POS = 10.0f / 9;
-    private final Sprite sprite;
 
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public enum Type {
+        Hero,
+        Enemy
+    }
+
+    public static final float HEALTH_POS = 10.0f / 9;
+
+    private final Sprite sprite;
+    private Type type;
     private Texture healthBar;
     private float maxHealth;
     private float health;
@@ -79,13 +94,14 @@ public class GameObject {
         this.weaponDelay = seconds;
     }
 
-    public static GameObject of(Texture img, float height) {
+    public static GameObject of(Texture img, Type type, float height, float speed) {
         GameObject object = new GameObject(new Sprite(img));
         object.setSizeWithWidthAspect(height);
+        object.setType(type);
         object.setHealth(100.0f);
         object.setMaxHealth(100.0f);
         object.createHealthBar();
-        object.setSpeed(3);
+        object.setSpeed(speed);
         return object;
     }
 

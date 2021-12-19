@@ -1,5 +1,7 @@
 package com.wchtpapaya.brutalrun;
 
+import com.badlogic.gdx.math.MathUtils;
+
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
