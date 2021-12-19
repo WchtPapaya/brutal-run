@@ -8,29 +8,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
 public class GameObject {
-
-    public enum Type {
-        HERO(0x0002, 0x0004),
-        ENEMY(0x0004, 0x0002),
-        HERO_SENSOR(0x0008, 0x0002 + 0x0004);
-
-        private int category;
-        private int collisionMask;
-
-        Type(int category, int collisionMask) {
-            this.category = category;
-            this.collisionMask = collisionMask;
-        }
-
-        public int getCategory() {
-            return category;
-        }
-
-        public int getCollisionMask() {
-            return collisionMask;
-        }
-    }
-
     public static final float HEALTH_POS = 10.0f / 9;
     private final Sprite sprite;
 
@@ -43,6 +20,8 @@ public class GameObject {
     private float weaponDamage;
     private boolean weaponOnDelay;
     private float weaponDelay;
+
+    private float speed;
 
     public GameObject(Sprite sprite) {
         this.sprite = sprite;
@@ -100,12 +79,13 @@ public class GameObject {
         this.weaponDelay = seconds;
     }
 
-    public static GameObject of(Texture img, float height, Type type) {
+    public static GameObject of(Texture img, float height) {
         GameObject object = new GameObject(new Sprite(img));
         object.setSizeWithWidthAspect(height);
         object.setHealth(100.0f);
         object.setMaxHealth(100.0f);
         object.createHealthBar();
+        object.setSpeed(3);
         return object;
     }
 
@@ -176,5 +156,16 @@ public class GameObject {
 
     public void setMaxHealth(float maxHealth) {
         this.maxHealth = maxHealth;
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
+
+    /**
+     * @param speed speed in world units per second
+     */
+    public void setSpeed(float speed) {
+        this.speed = speed;
     }
 }

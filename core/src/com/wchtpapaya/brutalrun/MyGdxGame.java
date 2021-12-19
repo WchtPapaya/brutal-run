@@ -8,8 +8,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.wchtpapaya.brutalrun.action.Action;
 import com.wchtpapaya.brutalrun.action.MovingAction;
+import com.wchtpapaya.brutalrun.controller.ActionsController;
 import com.wchtpapaya.brutalrun.controller.AttackingController;
 import com.wchtpapaya.brutalrun.sprite.GameObject;
 
@@ -18,23 +18,18 @@ import java.util.List;
 import java.util.Objects;
 
 public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
-    private static final float TIME_STEP = 0.01f;
-    private static final int VELOCITY_ITERATIONS = 4;
-    private static final int POSITION_ITERATIONS = 4;
     public static final int WORLD_WIDTH = 30;
 
-
     private AttackingController attackingController;
+    private ActionsController actionController;
 
     private SpriteBatch batch;
 
     private List<GameObject> sprites = new ArrayList<>();
-    private List<Action> actions = new ArrayList<>();
     private GameObject selectedHero;
 
     private Viewport viewport;
     private OrthographicCamera camera;
-    private float rotationSpeed = 0.5f;
 
     @Override
     public void create() {
@@ -52,6 +47,7 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
         batch = new SpriteBatch();
 
         attackingController = new AttackingController();
+        actionController = new ActionsController();
 
         this.createHero();
         GameObject enemy = this.createEnemy();
@@ -63,14 +59,14 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
     }
 
     private GameObject createEnemy() {
-        GameObject sprite = GameObject.of(new Texture("Enemy_1.png"), 3, GameObject.Type.ENEMY);
+        GameObject sprite = GameObject.of(new Texture("Enemy_1.png"), 3);
         sprite.setPosition(new Vector2(WORLD_WIDTH * 0.7f, 0));
         sprites.add(sprite);
         return sprite;
     }
 
     private void createHero() {
-        GameObject sprite = GameObject.of(new Texture("Hero_1.png"), 5, GameObject.Type.HERO);
+        GameObject sprite = GameObject.of(new Texture("Hero_1.png"), 5);
         sprite.setPosition(new Vector2(0, 0));
         sprites.add(sprite);
         selectedHero = sprite;
@@ -82,12 +78,13 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
         camera.update();
         batch.setProjectionMatrix(camera.combined);
 
-        sprites.stream().map(attackingController::attackEnemy)
+        sprites.stream().filter(s -> !actionController.hasActions(s))
+                .map(attackingController::attackEnemy)
                 .filter(Objects::nonNull)
-                .forEach(a -> actions.add(a));
+                .forEach(a -> actionController.addAction(a));
 
-        actions.forEach(a -> a.perform(deltaTime));
-        actions.removeIf(Action::isCompleted);
+        actionController.perform(deltaTime);
+        actionController.clearCompleted();
 
         ScreenUtils.clear(1, 0, 0, 1);
         batch.begin();
@@ -127,19 +124,9 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
         if (button != Input.Buttons.LEFT || pointer > 0) return false;
         Vector3 touchPoint = camera.unproject(new Vector3(screenX, screenY, 0));
         Gdx.app.log("Debug", String.format("Mouse touch at x: %f, y: %f", touchPoint.x, touchPoint.y));
-        addMovingAction(new Vector2(touchPoint.x, touchPoint.y), selectedHero);
+        actionController.clearGameObjectActions(selectedHero);
+        actionController.addAction(new MovingAction(new Vector2(touchPoint.x, touchPoint.y), selectedHero));
         return true;
-    }
-
-    private void addMovingAction(Vector2 destination, GameObject object) {
-        actions.removeIf(a -> a.getObject().equals(object));
-        addAction(destination, object);
-    }
-
-    private void addAction(Vector2 destination, GameObject object) {
-        Action action = new MovingAction(destination, 3, object);
-        action.start();
-        actions.add(action);
     }
 
     @Override

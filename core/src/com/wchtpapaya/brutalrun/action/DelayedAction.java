@@ -4,7 +4,6 @@ package com.wchtpapaya.brutalrun.action;
 import com.wchtpapaya.brutalrun.sprite.GameObject;
 
 public class DelayedAction extends Action {
-
     private final float delay;
     private float currentTime;
 
@@ -25,5 +24,15 @@ public class DelayedAction extends Action {
         object.setWeaponOnDelay(false);
         this.setCompleted(true);
         return true;
+    }
+
+    @Override
+    public void end() {
+    }
+
+    @Override
+    public void cancel() {
+        object.setWeaponOnDelay(false);
+        this.setCompleted(true);
     }
 }

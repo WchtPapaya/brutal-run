@@ -7,6 +7,14 @@ public abstract class Action {
     protected final GameObject object;
     protected boolean completed = false;
 
+    public abstract void start();
+
+    public abstract boolean perform(float deltaTime);
+
+    public abstract void end();
+
+    public abstract void cancel();
+
     protected Action(GameObject object) {
         this.object = object;
     }
@@ -18,11 +26,6 @@ public abstract class Action {
     public GameObject getObject() {
         return object;
     }
-
-
-    public abstract void start();
-
-    public abstract boolean perform(float deltaTime);
 
     public boolean isCompleted() {
         return completed;

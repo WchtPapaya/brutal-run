@@ -4,17 +4,13 @@ import com.badlogic.gdx.math.Vector2;
 import com.wchtpapaya.brutalrun.sprite.GameObject;
 
 public class MovingAction extends Action {
-
     private final Vector2 direction;
     private final float time;
     private float currentTime;
 
-    /**
-     * @param speed speed in world units per second
-     */
-    public MovingAction(Vector2 destination, float speed, GameObject object) {
+    public MovingAction(Vector2 destination, GameObject object) {
         super(object);
-
+        float speed = object.getSpeed();
         float dx = destination.x - object.getPosition().x;
         float dy = destination.y - object.getPosition().y;
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
@@ -39,6 +35,15 @@ public class MovingAction extends Action {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void end() {
+    }
+
+    @Override
+    public void cancel() {
+        completed = true;
     }
 
 }
