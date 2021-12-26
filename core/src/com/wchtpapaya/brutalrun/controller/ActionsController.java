@@ -67,13 +67,14 @@ public class ActionsController {
 
     public void moveToTarget(List<GameObject> sprites, GameObject.Type attackerType) {
         sprites.stream().filter(s -> s.getType().equals(attackerType))
-                .filter(s -> !attackingController.canAttack(s, s.getTargetToAttack()))
+                .filter(s -> !attackingController.isAtAttackingRange(s, s.getTargetToAttack()))
                 .forEach(s -> {
-                    if (s.getTargetToAttack() == null) return;
+                    final GameObject targetToAttack = s.getTargetToAttack();
+                    if (targetToAttack == null) return;
                     clearMovingActions(s);
-                    Vector2 destination = s.getTargetToAttack().getPosition();
-                    float halfRadius = s.getAttackRadius() / 2;
-                    destination.add(-halfRadius, 0);
+                    Vector2 destination = Utils.pointAtLine(s.getX(), s.getY(),
+                            targetToAttack.getX(), targetToAttack.getY(),
+                            s.getWeaponRadius());
                     addAction(new MovingAction(destination, s));
                 });
     }

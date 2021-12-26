@@ -29,7 +29,13 @@ public class AttackingController {
     public boolean canAttack(GameObject attacker, GameObject targetToAttack) {
         if (targetToAttack == null || attacker.isWeaponOnDelay()) return false;
 
+        return isAtAttackingRange(attacker, targetToAttack);
+    }
+
+    public boolean isAtAttackingRange(GameObject attacker, GameObject targetToAttack) {
+        if (targetToAttack == null) return false;
+
         final float distance = (float) distance(attacker, targetToAttack);
-        return distance <= attacker.getAttackRadius();
+        return distance <= attacker.getWeaponRadius();
     }
 }

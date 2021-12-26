@@ -56,7 +56,7 @@ public class GameObject {
         this.targetToAttack = targetToAttack;
     }
 
-    public float getAttackRadius() {
+    public float getWeaponRadius() {
         return attackRadius;
     }
 
