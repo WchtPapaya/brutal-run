@@ -1,6 +1,7 @@
 package com.wchtpapaya.brutalrun.controller;
 
 import com.badlogic.gdx.math.Vector2;
+import com.wchtpapaya.brutalrun.Utils;
 import com.wchtpapaya.brutalrun.action.Action;
 import com.wchtpapaya.brutalrun.action.MovingAction;
 import com.wchtpapaya.brutalrun.sprite.GameObject;
@@ -8,22 +9,31 @@ import com.wchtpapaya.brutalrun.sprite.GameObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ActionsController {
 
     private final List<Action> actions = new ArrayList<>();
 
     private AttackingController attackingController;
-    private EnemyController enemyController;
 
-    public ActionsController(AttackingController attackingController, EnemyController enemyController) {
+    public ActionsController(AttackingController attackingController) {
         this.attackingController = attackingController;
-        this.enemyController = enemyController;
     }
 
-    public void clearGameObjectActions(GameObject object) {
+    public void clearAllActions(GameObject object) {
         actions.removeIf(a -> {
             if (a.getObject().equals(object)) {
+                a.cancel();
+                return true;
+            }
+            return false;
+        });
+    }
+
+    public void clearMovingActions(GameObject object) {
+        actions.removeIf(a -> {
+            if (a.getObject().equals(object) && a instanceof MovingAction) {
                 a.cancel();
                 return true;
             }
@@ -48,22 +58,48 @@ public class ActionsController {
         return actions.stream().anyMatch(a -> a.getObject().equals(gameObject));
     }
 
-    public void checkAttacks(List<GameObject> sprites) {
+    public void performAttacks(List<GameObject> sprites) {
         sprites.stream().filter(s -> !hasActions(s))
-                .map(attackingController::attackEnemy)
+                .map(attackingController::attackTarget)
                 .filter(Objects::nonNull)
                 .forEach(this::addAction);
     }
 
-    public void moveToHeroes(List<GameObject> sprites) {
-        sprites.stream().filter(s -> s.getType().equals(GameObject.Type.Enemy))
-                .filter(s -> !attackingController.canAttack(s))
+    public void moveToTarget(List<GameObject> sprites, GameObject.Type attackerType) {
+        sprites.stream().filter(s -> s.getType().equals(attackerType))
+                .filter(s -> !attackingController.canAttack(s, s.getTargetToAttack()))
                 .forEach(s -> {
-                    clearGameObjectActions(s);
-                    Vector2 destination = s.getEnemyToAttack().getPosition();
+                    if (s.getTargetToAttack() == null) return;
+                    clearMovingActions(s);
+                    Vector2 destination = s.getTargetToAttack().getPosition();
                     float halfRadius = s.getAttackRadius() / 2;
                     destination.add(-halfRadius, 0);
                     addAction(new MovingAction(destination, s));
                 });
+    }
+
+    public void setTargets(List<GameObject> sprites, GameObject.Type attackerType, GameObject.Type targetType) {
+        List<GameObject> targets = sprites.stream().filter(s -> s.getType().equals(targetType))
+                .collect(Collectors.toList());
+        if (targets.isEmpty()) return;
+
+        sprites.stream().filter(s -> s.getType().equals(attackerType))
+                .filter(a -> a.getTargetToAttack() == null)
+                .forEach(attacker -> {
+                    float min = (float) Utils.distance(attacker, targets.get(0));
+                    GameObject nearest = targets.get(0);
+                    for (GameObject target : targets) {
+                        float distance = (float) Utils.distance(attacker, target);
+                        if (distance < min) {
+                            min = distance;
+                            nearest = target;
+                        }
+                    }
+                    attacker.setTargetToAttack(nearest);
+                });
+    }
+
+    public void removeActions(GameObject object) {
+        actions.removeIf(a -> a.getObject().equals(object));
     }
 }

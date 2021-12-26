@@ -1,15 +1,19 @@
 package com.wchtpapaya.brutalrun.action;
 
-
 import com.wchtpapaya.brutalrun.sprite.GameObject;
 
 public class DelayedAction extends Action {
     private final float delay;
+    private final Runnable performAction;
+    private final Runnable cancelAction;
+
     private float currentTime;
 
-    public DelayedAction(GameObject object) {
+    public DelayedAction(GameObject object, float delay, Runnable perform, Runnable cancel) {
         super(object);
-        delay = object.getWeaponDelay();
+        this.delay = delay;
+        performAction = perform;
+        cancelAction = cancel;
     }
 
     @Override
@@ -20,8 +24,7 @@ public class DelayedAction extends Action {
     public boolean perform(float deltaTime) {
         currentTime += deltaTime;
         if (currentTime < delay) return false;
-
-        object.setWeaponOnDelay(false);
+        performAction.run();
         this.setCompleted(true);
         return true;
     }
@@ -32,7 +35,7 @@ public class DelayedAction extends Action {
 
     @Override
     public void cancel() {
-        object.setWeaponOnDelay(false);
+        cancelAction.run();
         this.setCompleted(true);
     }
 }

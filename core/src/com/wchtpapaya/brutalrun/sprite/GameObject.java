@@ -17,6 +17,10 @@ public class GameObject {
         this.type = type;
     }
 
+    public boolean isAlive() {
+        return alive;
+    }
+
     public enum Type {
         Hero,
         Enemy
@@ -24,13 +28,15 @@ public class GameObject {
 
     public static final float HEALTH_POS = 10.0f / 9;
 
+    private boolean alive = true;
+
     private final Sprite sprite;
     private Type type;
     private Texture healthBar;
     private float maxHealth;
     private float health;
 
-    private GameObject enemyToAttack;
+    private GameObject targetToAttack;
     private float attackRadius;
     private float weaponDamage;
     private boolean weaponOnDelay;
@@ -42,12 +48,12 @@ public class GameObject {
         this.sprite = sprite;
     }
 
-    public GameObject getEnemyToAttack() {
-        return enemyToAttack;
+    public GameObject getTargetToAttack() {
+        return targetToAttack;
     }
 
-    public void setEnemyToAttack(GameObject enemyToAttack) {
-        this.enemyToAttack = enemyToAttack;
+    public void setTargetToAttack(GameObject targetToAttack) {
+        this.targetToAttack = targetToAttack;
     }
 
     public float getAttackRadius() {
@@ -60,6 +66,9 @@ public class GameObject {
 
     public void decreaseHealth(float damage) {
         health -= damage;
+        if (health <= 0.0f) {
+            kill();
+        }
     }
 
     public boolean isWeaponOnDelay() {
@@ -103,6 +112,12 @@ public class GameObject {
         object.createHealthBar();
         object.setSpeed(speed);
         return object;
+    }
+
+    public void kill() {
+        alive = false;
+        targetToAttack = null;
+        dispose();
     }
 
     protected void createHealthBar() {

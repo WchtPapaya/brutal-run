@@ -22,6 +22,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 
     private ActionsController actionsController;
 
+    private EnemyController enemyController;
+
     private SpriteBatch batch;
 
     private List<GameObject> sprites = new ArrayList<>();
@@ -46,27 +48,13 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 
         batch = new SpriteBatch();
 
-        actionsController = new ActionsController(new AttackingController(), new EnemyController());
-
+        enemyController = new EnemyController();
+        actionsController = new ActionsController(new AttackingController());
         this.createHero();
-        GameObject enemy = this.createEnemy();
 
-        selectedHero.setEnemyToAttack(enemy);
         selectedHero.setAttackRadius(5);
         selectedHero.setWeaponDamage(10);
         selectedHero.setWeaponDelay(1.0f);
-    }
-
-    private GameObject createEnemy() {
-        GameObject sprite = GameObject.of(new Texture("Enemy_1.png"), GameObject.Type.Enemy, 3, 3);
-        sprite.setPosition(new Vector2(WORLD_WIDTH * 0.7f, 0));
-        sprite.setEnemyToAttack(selectedHero);
-        sprite.setAttackRadius(5);
-        sprite.setWeaponDamage(15);
-        sprite.setWeaponDelay(2.0f);
-        sprites.add(sprite);
-
-        return sprite;
     }
 
     private void createHero() {
@@ -82,15 +70,32 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
         camera.update();
         batch.setProjectionMatrix(camera.combined);
 
-        actionsController.moveToHeroes(sprites);
-        actionsController.checkAttacks(sprites);
+        actionsController.moveToTarget(sprites, GameObject.Type.Enemy);
+        actionsController.performAttacks(sprites);
+
+        removeDeadObjects();
+
         actionsController.perform(deltaTime);
         actionsController.clearCompleted();
+        if (enemyController.checkEnemySpawn(sprites)) {
+            enemyController.spawnEnemies(sprites);
+        }
+        actionsController.setTargets(sprites, GameObject.Type.Enemy, GameObject.Type.Hero);
+        actionsController.setTargets(sprites, GameObject.Type.Hero, GameObject.Type.Enemy);
 
         ScreenUtils.clear(1, 0, 0, 1);
         batch.begin();
         sprites.forEach(s -> s.draw(batch));
         batch.end();
+    }
+
+    private void removeDeadObjects() {
+        sprites.stream().filter(o -> !o.isAlive())
+                .forEach(o -> {
+                    actionsController.removeActions(o);
+                    if (o.equals(selectedHero)) selectedHero = null;
+                });
+        sprites.removeIf((o) -> !o.isAlive());
     }
 
 
@@ -125,7 +130,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
         if (button != Input.Buttons.LEFT || pointer > 0) return false;
         Vector3 touchPoint = camera.unproject(new Vector3(screenX, screenY, 0));
         Gdx.app.log("Debug", String.format("Mouse touch at x: %f, y: %f", touchPoint.x, touchPoint.y));
-        actionsController.clearGameObjectActions(selectedHero);
+        if (selectedHero == null) return true;
+        actionsController.clearMovingActions(selectedHero);
         actionsController.addAction(new MovingAction(new Vector2(touchPoint.x, touchPoint.y), selectedHero));
         return true;
     }
