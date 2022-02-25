@@ -1,13 +1,24 @@
 package com.wchtpapaya.brutalrun.sprite;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
 public class GameObject {
+
+    private float positionX;
+    private float positionY;
+
+    private Animation<TextureRegion> currentAnimation;
+    private float height;
+    private float width;
+    private boolean scaledToHeight;
 
     public Type getType() {
         return type;
@@ -21,6 +32,19 @@ public class GameObject {
         return alive;
     }
 
+    public void setPositionX(float positionX) {
+        this.positionX = positionX;
+    }
+
+    public void setPositionY(float positionY) {
+        this.positionY = positionY;
+    }
+
+    public void setPosition(int x, int y) {
+        this.positionX = x;
+        this.positionY = y;
+    }
+
     public enum Type {
         Hero,
         Enemy
@@ -30,7 +54,8 @@ public class GameObject {
 
     private boolean alive = true;
 
-    private final Sprite sprite;
+    Texture sheet;
+
     private Type type;
     private Texture healthBar;
     private float maxHealth;
@@ -44,8 +69,31 @@ public class GameObject {
 
     private float speed;
 
-    public GameObject(Sprite sprite) {
-        this.sprite = sprite;
+    public GameObject() {
+        sheet = new Texture(Gdx.files.internal("Hero_1/Running.png"));
+
+        // Use the split utility method to create a 2D array of TextureRegions. This is
+        // possible because this sprite sheet contains frames of equal size and they are
+        // all aligned.
+        final int FRAME_COLS = 6;
+        final int FRAME_ROWS = 4;
+        TextureRegion[][] tmp = TextureRegion.split(sheet,
+                sheet.getWidth() / FRAME_COLS,
+                sheet.getHeight() / FRAME_ROWS);
+
+        // Place the regions into a 1D array in the correct order, starting from the top
+        // left, going across first. The Animation constructor requires a 1D array.
+        TextureRegion[] walkFrames = new TextureRegion[FRAME_COLS * FRAME_ROWS];
+        int index = 0;
+        for (int i = 0; i < FRAME_ROWS; i++) {
+            for (int j = 0; j < FRAME_COLS; j++) {
+                walkFrames[index++] = tmp[i][j];
+            }
+        }
+
+        // Initialize the Animation with the frame interval and array of frames
+        float frameDuration = 1 / 24f;
+        currentAnimation = new Animation<>(frameDuration, walkFrames);
     }
 
     public GameObject getTargetToAttack() {
@@ -80,11 +128,11 @@ public class GameObject {
     }
 
     public float getX() {
-        return sprite.getX();
+        return positionX;
     }
 
     public float getY() {
-        return sprite.getY();
+        return positionY;
     }
 
     public float getWeaponDamage() {
@@ -103,9 +151,9 @@ public class GameObject {
         this.weaponDelay = seconds;
     }
 
-    public static GameObject of(Texture img, Type type, float height, float speed) {
-        GameObject object = new GameObject(new Sprite(img));
-        object.setSizeWithWidthAspect(height);
+    public static GameObject of(Type type, float height, float speed) {
+        GameObject object = new GameObject();
+        object.setWorldHeight(height);
         object.setType(type);
         object.setHealth(100.0f);
         object.setMaxHealth(100.0f);
@@ -129,48 +177,41 @@ public class GameObject {
 
     }
 
-    public void draw(SpriteBatch batch) {
-        sprite.draw(batch);
+    public void draw(SpriteBatch batch, float stateTime) {
+
+        TextureRegion currentFrame = currentAnimation.getKeyFrame(stateTime, true);
+
+        final int regionWidth = currentFrame.getRegionWidth();
+        final int regionHeight = currentFrame.getRegionHeight();
+
+        final float widthAtWorld = height / regionHeight * regionWidth;
+        batch.draw(currentFrame, positionX, positionY, widthAtWorld, height);
+
         batch.draw(healthBar,
-                sprite.getX(),
-                sprite.getY() + HEALTH_POS * sprite.getHeight(),
-                getHealth() / maxHealth * sprite.getWidth(),
+                getX(),
+                getY() + HEALTH_POS * height,
+                getHealth() / maxHealth * widthAtWorld,
                 0.5f);
     }
 
-
-    public void setPosition(Vector2 position) {
-        sprite.setPosition(position.x, position.y);
-        position.add(sprite.getWidth() / 2, sprite.getHeight() / 2);
-    }
-
-    public Vector2 getPosition() {
-        return new Vector2(sprite.getX(), sprite.getY());
-    }
-
-    public void setSize(float width, float height) {
-        sprite.setSize(width, height);
-    }
-
-    public void setSizeWithHeightAspect(float width) {
-        sprite.setSize(width, width / sprite.getWidth() * sprite.getHeight());
-    }
-
-    public void setSizeWithWidthAspect(float height) {
-        sprite.setSize(height / sprite.getHeight() * sprite.getWidth(), height);
+    public void setWorldHeight(float height) {
+        scaledToHeight = true;
+        this.height = height;
     }
 
     public void dispose() {
-        sprite.getTexture().dispose();
+        sheet.dispose();
         healthBar.dispose();
     }
 
     public void translate(float dx, float dy) {
-        sprite.translate(dx, dy);
+        this.positionX += dx;
+        this.positionY += dy;
     }
 
     public void flipLeft(boolean left) {
-        sprite.setFlip(left, sprite.isFlipY());
+        // TODO restore flipping
+//        sprite.setFlip(left, sprite.isFlipY());
     }
 
     public float getHealth() {

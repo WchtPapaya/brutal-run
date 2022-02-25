@@ -11,8 +11,8 @@ public class MovingAction extends Action {
     public MovingAction(Vector2 destination, GameObject object) {
         super(object);
         float speed = object.getSpeed();
-        float dx = destination.x - object.getPosition().x;
-        float dy = destination.y - object.getPosition().y;
+        float dx = destination.x - object.getX();
+        float dy = destination.y - object.getY();
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
         direction = new Vector2(dx / distance * speed, dy / distance * speed);
 

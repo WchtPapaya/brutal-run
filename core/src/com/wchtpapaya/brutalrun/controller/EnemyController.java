@@ -20,11 +20,14 @@ public class EnemyController {
     }
 
     private GameObject createEnemy() {
-        GameObject sprite = GameObject.of(new Texture("Enemy_1.png"), GameObject.Type.Enemy, 3, 3);
-        sprite.setPosition(new Vector2(MyGdxGame.WORLD_WIDTH * MathUtils.random(), 0));
-        sprite.setAttackRadius(5);
-        sprite.setWeaponDamage(15);
-        sprite.setWeaponDelay(2.0f);
-        return sprite;
+        // TODO Restore Enemy
+//        GameObject sprite = GameObject.of(new Texture("Enemy_1.png"), GameObject.Type.Enemy, 3, 3);
+//        sprite.setPosition(new Vector2(MyGdxGame.WORLD_WIDTH * MathUtils.random(), 0));
+//        sprite.setAttackRadius(5);
+//        sprite.setWeaponDamage(15);
+//        sprite.setWeaponDelay(2.0f);
+//        return sprite;
+        return null;
     }
+
 }

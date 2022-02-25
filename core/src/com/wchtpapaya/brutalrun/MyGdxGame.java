@@ -3,7 +3,9 @@ package com.wchtpapaya.brutalrun;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -33,6 +35,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
     private Viewport viewport;
     private OrthographicCamera camera;
 
+    private float stateTime;
+
     @Override
     public void create() {
         Gdx.graphics.setWindowedMode(1440, 900);
@@ -55,11 +59,13 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
         selectedHero.setAttackRadius(5);
         selectedHero.setWeaponDamage(10);
         selectedHero.setWeaponDelay(1.0f);
+
+        stateTime = 0f;
     }
 
     private void createHero() {
-        GameObject sprite = GameObject.of(new Texture("Hero_1.png"), GameObject.Type.Hero, 5, 6);
-        sprite.setPosition(new Vector2(0, 0));
+        GameObject sprite = GameObject.of(GameObject.Type.Hero, 5, 6);
+        sprite.setPosition(0, 0);
         sprites.add(sprite);
         selectedHero = sprite;
     }
@@ -67,6 +73,8 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
     @Override
     public void render() {
         float deltaTime = Gdx.graphics.getDeltaTime();
+        stateTime += deltaTime;
+
         camera.update();
         batch.setProjectionMatrix(camera.combined);
 
@@ -77,15 +85,20 @@ public class MyGdxGame extends ApplicationAdapter implements InputProcessor {
 
         actionsController.perform(deltaTime);
         actionsController.clearCompleted();
-        if (enemyController.checkEnemySpawn(sprites)) {
-            enemyController.spawnEnemies(sprites);
-        }
-        actionsController.setTargets(sprites, GameObject.Type.Enemy, GameObject.Type.Hero);
-        actionsController.setTargets(sprites, GameObject.Type.Hero, GameObject.Type.Enemy);
 
-        ScreenUtils.clear(1, 0, 0, 1);
+        // TODO restore Enemy spawn
+//        if (enemyController.checkEnemySpawn(sprites)) {
+//            enemyController.spawnEnemies(sprites);
+//        }
+        // TODO restore atacking AI
+//        actionsController.setTargets(sprites, GameObject.Type.Enemy, GameObject.Type.Hero);
+//        actionsController.setTargets(sprites, GameObject.Type.Hero, GameObject.Type.Enemy);
+
+        // Get current frame of animation for the current stateTime
+
+        ScreenUtils.clear(0.6f, 0.5f, 0.5f, 1);
         batch.begin();
-        sprites.forEach(s -> s.draw(batch));
+        sprites.forEach(s -> s.draw(batch, stateTime));
         batch.end();
     }
 
