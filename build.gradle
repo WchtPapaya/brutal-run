@@ -1,5 +1,4 @@
 buildscript {
-    
 
     repositories {
         mavenLocal()
@@ -11,7 +10,6 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:4.2.0'
         classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.12'
-        
 
     }
 }
