@@ -10,11 +10,10 @@ import java.util.Map;
 public class SequenceAnimationLoader implements AnimationLoader {
 
     // TODO need rework, can`t be used
-    private Map<AnimationController, Texture> animations = new HashMap<>();
+    private Map<AnimationContainer, Texture> animations = new HashMap<>();
 
     @Override
-    public AnimationController getAnimations(String objectName) {
-        loadHeroAnimations();
+    public AnimationContainer loadAnimations(Texture sheet, String jsonFilePath) {
         return null;
     }
 
@@ -42,6 +41,7 @@ public class SequenceAnimationLoader implements AnimationLoader {
 
         // Initialize the Animation with the frame interval and array of frames
         float frameDuration = 1 / 24f;
+//        currentAnimation = new Animation<>(frameDuration, walkFrames);
 //        animations.put(new AnimationsContainer(spriteName, animations), sheet);
     }
 }

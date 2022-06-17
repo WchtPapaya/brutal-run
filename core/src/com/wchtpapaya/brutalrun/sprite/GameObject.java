@@ -1,64 +1,63 @@
 package com.wchtpapaya.brutalrun.sprite;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.wchtpapaya.brutalrun.animation.AnimationController;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
 public class GameObject {
-
-    private float positionX;
-    private float positionY;
-
-    private boolean flipLeft;
-
-    private Animation<TextureRegion> currentAnimation;
-    private float height;
-    private float width;
-    private boolean scaledToHeight;
 
     public enum Type {
         Hero,
         Enemy
     }
 
-    public static final float HEALTH_POS = 10.0f / 9;
+    @Getter
+    private final String name;
+    /**
+     * x coordinate of an object center position
+     */
+    @Setter
+    private float x;
+    /**
+     * y coordinate of an object center position
+     */
+    @Setter
+    private float y;
+    private boolean flipLeft;
+    /**
+     * height at world coordinates
+     */
+    private float height;
+    /**
+     * width at world coordinates
+     */
+    private float width;
+    private boolean scaledToHeight;
+    private final AnimationController animationController;
 
     private boolean alive = true;
-
-    Texture sheet;
-
+    @Setter
     private Type type;
-    private Texture healthBar;
+    @Setter
     private float maxHealth;
+    @Setter
     private float health;
-
-    private GameObject targetToAttack;
-    private float attackRadius;
-    private float weaponDamage;
-    private boolean weaponOnDelay;
-    private float weaponDelay;
-
+    /**
+     * speed in world units per second
+     */
+    @Setter
     private float speed;
 
-    public GameObject() {
+    private HealthBar healthBar;
 
-    }
-
-    public void decreaseHealth(float damage) {
-        health -= damage;
-        if (health <= 0.0f) {
-            kill();
-        }
-    }
-
-    public static GameObject of(Type type, float height, float speed) {
-        GameObject object = new GameObject();
-        object.setWorldHeight(height);
+    public static GameObject of(String name, Type type, AnimationController controller, float height, float speed) {
+        GameObject object = new GameObject(name, controller);
         object.setType(type);
+        object.setWorldHeight(height);
         object.setHealth(100.0f);
         object.setMaxHealth(100.0f);
         object.createHealthBar();
@@ -66,82 +65,14 @@ public class GameObject {
         return object;
     }
 
-    public void kill() {
-        alive = false;
-        targetToAttack = null;
-        dispose();
-    }
-
-    public void draw(SpriteBatch batch, float stateTime) {
-
-        TextureRegion currentFrame = currentAnimation.getKeyFrame(stateTime, true);
-
-        final int regionWidth = currentFrame.getRegionWidth();
-        final int regionHeight = currentFrame.getRegionHeight();
-
-        final float widthAtWorld = height / regionHeight * regionWidth;
-
-        if (flipLeft != currentFrame.isFlipX()) {
-            currentFrame.flip(true, false);
-        }
-        batch.draw(currentFrame, positionX, positionY, widthAtWorld, height);
-
-        batch.draw(healthBar,
-                getX(),
-                getY() + HEALTH_POS * height,
-                getHealth() / maxHealth * widthAtWorld,
-                0.5f);
-    }
-
-    public void translate(float dx, float dy) {
-        this.positionX += dx;
-        this.positionY += dy;
-    }
-
-    public void dispose() {
-        sheet.dispose();
-        healthBar.dispose();
-    }
-
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-    public boolean isAlive() {
-        return alive;
-    }
-
-    public void setPositionX(float positionX) {
-        this.positionX = positionX;
-    }
-
-    public void setPositionY(float positionY) {
-        this.positionY = positionY;
+    public GameObject(String name, AnimationController controller) {
+        this.name = name;
+        animationController = controller;
     }
 
     public void setPosition(int x, int y) {
-        this.positionX = x;
-        this.positionY = y;
-    }
-
-    public GameObject getTargetToAttack() {
-        return targetToAttack;
-    }
-
-    public void setTargetToAttack(GameObject targetToAttack) {
-        this.targetToAttack = targetToAttack;
-    }
-
-    public float getWeaponRadius() {
-        return attackRadius;
-    }
-
-    public void setAttackRadius(float attackRadius) {
-        this.attackRadius = attackRadius;
+        this.x = x;
+        this.y = y;
     }
 
     public void setWorldHeight(float height) {
@@ -153,71 +84,51 @@ public class GameObject {
         flipLeft = left;
     }
 
-    public float getHealth() {
-        return health;
+    public void kill() {
+        alive = false;
+        dispose();
     }
 
-    public void setHealth(float health) {
-        this.health = health;
+    public void draw(SpriteBatch batch, float stateTime) {
+
+        TextureRegion currentFrame = animationController.getFrame(stateTime);
+
+        final int regionWidth = currentFrame.getRegionWidth();
+        final int regionHeight = currentFrame.getRegionHeight();
+
+        final float widthAtWorld = height / regionHeight * regionWidth;
+
+        if (flipLeft != currentFrame.isFlipX()) {
+            currentFrame.flip(true, false);
+        }
+        batch.draw(currentFrame, x, y, widthAtWorld, height);
+        healthBar.draw(batch,
+                this.getX() + widthAtWorld / 2,
+                this.getY() + HealthBar.HEALTH_BAR_Y_POS * height,
+                getHealth() / maxHealth * widthAtWorld);
     }
 
-    public float getMaxHealth() {
-        return maxHealth;
+    public void translate(float dx, float dy) {
+        this.x += dx;
+        this.y += dy;
     }
 
-    public void setMaxHealth(float maxHealth) {
-        this.maxHealth = maxHealth;
+    public void decreaseHealth(float damage) {
+        health -= damage;
+        if (health <= 0.0f) {
+            kill();
+        }
     }
 
-    public float getSpeed() {
-        return speed;
+    public float move(float speed) {
+        return x += speed;
     }
 
-    /**
-     * @param speed speed in world units per second
-     */
-    public void setSpeed(float speed) {
-        this.speed = speed;
-    }
-
-    public boolean isWeaponOnDelay() {
-        return weaponOnDelay;
-    }
-
-    public void setWeaponOnDelay(boolean weaponOnDelay) {
-        this.weaponOnDelay = weaponOnDelay;
-    }
-
-    public float getX() {
-        return positionX;
-    }
-
-    public float getY() {
-        return positionY;
-    }
-
-    public float getWeaponDamage() {
-        return weaponDamage;
-    }
-
-    public void setWeaponDamage(float weaponDamage) {
-        this.weaponDamage = weaponDamage;
-    }
-
-    public float getWeaponDelay() {
-        return weaponDelay;
-    }
-
-    public void setWeaponDelay(float seconds) {
-        this.weaponDelay = seconds;
+    private void dispose() {
+        healthBar.dispose();
     }
 
     protected void createHealthBar() {
-        final int HEALTH_BAR_SIZES = 10;
-        Pixmap pixmap = new Pixmap(HEALTH_BAR_SIZES, HEALTH_BAR_SIZES, Pixmap.Format.RGB888);
-        pixmap.setColor(Color.GREEN);
-        pixmap.fillRectangle(0, 0, HEALTH_BAR_SIZES, HEALTH_BAR_SIZES);
-        healthBar = new Texture(pixmap);
-
+        healthBar = new HealthBar(0.3f);
     }
 }

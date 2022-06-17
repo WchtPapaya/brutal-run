@@ -11,4 +11,5 @@ test {
 
 dependencies {
     implementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+    implementation group: 'org.mockito', name: 'mockito-all', version: '1.9.5'
 }

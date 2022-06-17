@@ -1,5 +1,7 @@
 package com.wchtpapaya.brutalrun.animation;
 
+import com.badlogic.gdx.graphics.Texture;
+
 public interface AnimationLoader {
-    AnimationController getAnimations(String objectName);
+    AnimationContainer loadAnimations(Texture sheet, String jsonFilePath);
 }
